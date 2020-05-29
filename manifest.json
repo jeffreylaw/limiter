@@ -1,0 +1,16 @@
+{
+    "manifest_version": 2,
+    "name": "Limiter",
+    "version": "1.0",
+
+    "description": "Limit the number of times you can visit a page in a day.",
+    "browser_action": {
+        "default_title": "Limiter",
+        "default_popup": "popup.html"
+    },
+    "background": {
+        "scripts": ["background.js"],
+        "peristent": false
+    },
+    "permissions": ["tabs", "storage", "activeTab"]
+}
