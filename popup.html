@@ -1,11 +1,36 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <style>
-    </style>
+    <link rel="stylesheet" href="css/popup.css">
   </head>
   <body>
-    <button id="addSite">Add this site</button>
+    <h1>Limiter</h1>
+
+    <div id="info-div"> 
+      <h6 id="hostname"></h6>
+    </div>
+    <div id="counters">
+      <span id="timer"></span><br>
+      <span id="remainingCounter"></span>
+      <hr>
+    </div>
+    <div id="create-limit-div">
+      <form action="">
+        Maximum number of visits:<br>
+        <input type="number" id="maxVisits" min="0" required><br>
+        Hours:<br>
+        <input type="number" id="hours" min="0" max="24" required><br>
+        Minutes:<br>
+        <input type="number" id="minutes" min="1" max="60" required><br>
+        <input class="btn-1" type="submit" value="Limit" id="addSite"><br>
+        <hr>
+        <input class="btn-1" type="button" value="" id="clearLimiter"><br>
+        <input class="btn-1" type="button" value="Release all sites" id="clearAll">
+      </form>
+    </div>
+    <a href="" target="_blank" id="about-link">About</a>
+    <a href="" target="_blank" id="howto-link">How to use?</a>
+    <a href="https://github.com/jeffreylaw/limiter" target="_blank">Github</a>
     <script src="popup.js"></script>
   </body>
 </html>
