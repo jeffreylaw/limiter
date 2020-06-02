@@ -23,6 +23,6 @@ Subdomains are currently treated separately. I.e. help.github.com is different t
 Tabs with the same domain don't show the same badge value
 
 ## Versions
-2.0 - Badger badger badger badgessss 
-1.5 - Removable limits, timer bug fixes
-1.0 - Initial Release
+2.0 - Badges\
+1.5 - Removable limits, timer bug fixes\
+1.0 - Initial Release\
