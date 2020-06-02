@@ -15,7 +15,7 @@ A Chrome extension that allows you to limit the amount of visits to a particular
 * JavaScript
 
 ## Upcoming Features
-Block page from loading rather than letting the page load before blocking
+Block page from loading rather than letting the page load before blocking\
 Test synchronicity between Chrome browsers on different computers
 
 ## Known Bugs
