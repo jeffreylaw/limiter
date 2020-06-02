@@ -1,9 +1,7 @@
 # limiter
-<hr>
 A Chrome extension that allows you to limit the amount of visits to a particular website for a period of time.
 
 ## Getting Started
-<hr>
 
 ### Installing
 1. `git clone https://github.com/jeffreylaw/limiter.git`
@@ -12,7 +10,6 @@ A Chrome extension that allows you to limit the amount of visits to a particular
 4. Start using Limiter
 
 ## Built With
-<hr>
 * HTML
 * CSS
 * JavaScript
