@@ -25,4 +25,4 @@ Tabs with the same domain don't show the same badge value
 ## Versions
 2.0 - Badges\
 1.5 - Removable limits, timer bug fixes\
-1.0 - Initial Release\
+1.0 - Initial Release
