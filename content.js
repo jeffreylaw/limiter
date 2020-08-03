@@ -14,8 +14,10 @@ function removeExistingComponents() {
     document.body.innerHTML = "";
     document.getElementsByTagName("body")[0].removeAttribute("class");
     document.getElementsByTagName("html")[0].removeAttribute("class");
-    // document.querySelectorAll('[style]').forEach(el => el.removeAttribute('style'));
-    // document.querySelectorAll('link[rel="stylesheet"]').forEach(el => el.parentNode.removeChild(el));
+    document.querySelectorAll('[style]').forEach(el => el.removeAttribute('style'));
+    document.querySelectorAll('link[rel="stylesheet"]').forEach(el => el.parentNode.removeChild(el));
+    document.querySelectorAll('style').forEach(el => el.parentNode.removeChild(el));
+    document.querySelectorAll('iframe').forEach(el => el.parentNode.removeChild(el));
 }
 
 /*
@@ -25,32 +27,43 @@ function createComponents() {
     document.body.appendChild(coverDiv);
     
     let title = document.createElement("h1");
-    var titleText = document.createTextNode(hostname + " is blocked!")
+    title.style.textAlign = "center";
+    let titleText = document.createTextNode(hostname + " is blocked!");
     title.appendChild(titleText);
     coverDiv.appendChild(title);
     
-    var info = document.createElement("p");
-    var infoText = document.createTextNode("You have exceeded the maximum number of visits to this domain, you will be locked out until the timer is up.");
+    let pikachuGif = document.createElement("img");
+    pikachuGif.style.display = "block";
+    pikachuGif.style.margin = "0 auto";
+    pikachuGif.setAttribute("src", chrome.runtime.getURL('./images/sad_pikachu.gif'));
+    coverDiv.appendChild(pikachuGif);
+
+    let info = document.createElement("p");
+    info.style.textAlign = "center";
+    info.style.fontSize = "25px";
+    let infoText = document.createTextNode("You have exceeded the maximum number of visits to this domain, you will be locked out until the timer is up.");
     
     info.appendChild(infoText);
     coverDiv.appendChild(info)
     
-    var timer = document.createElement("p");
-    timer.id = "timer"
+    let timer = document.createElement("p");
+    timer.style.textAlign = "center";
+    timer.style.fontSize = "25px";
+    timer.id = "timer";
     coverDiv.appendChild(timer);
 }
 
 /* 
-    Debugging components
+    Component for debugging ONLY
     Shows the start and end times, website root domain, visit count, and max visits.
 */
 function createDebuggingComponents() {
-    var debugParagraph = document.createElement("p");
-    var debugHeader = document.createElement("h1");
-    var debugDescription = document.createTextNode("Debugging Information")
-    var websiteName = document.createTextNode("Website: " + hostname);
-    var visitCount = document.createTextNode("Visits: " + (dataObj["currentCount"] + 1));
-    var maxCount = document.createTextNode("Max visits: " + dataObj["maxCount"]);
+    let debugParagraph = document.createElement("p");
+    let debugHeader = document.createElement("h1");
+    let debugDescription = document.createTextNode("Debugging Information");
+    let websiteName = document.createTextNode("Website: " + hostname);
+    let visitCount = document.createTextNode("Visits: " + (dataObj["currentCount"] + 1));
+    let maxCount = document.createTextNode("Max visits: " + dataObj["maxCount"]);
     debugHeader.appendChild(debugDescription);
     debugParagraph.appendChild(debugHeader);
     debugParagraph.appendChild(websiteName);
@@ -70,15 +83,15 @@ function createDebuggingComponents() {
     Create and display a countdown timer.
 */
 function startCountdown() {
-    var interval = setInterval(function() {
-        var now = new Date().getTime();
-        var distance = endTime - now;
+    let interval = setInterval(function() {
+        let now = new Date().getTime();
+        let distance = endTime - now;
 
-        var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        let seconds = Math.floor((distance % (1000 * 60)) / 1000);
         document.getElementById("timer").innerHTML = "Remaining time: " + hours + "h " + minutes + "m " + seconds + "s ";
-        if (hours == 0 && minutes == 0 && seconds == 0) {
+        if (hours == 0 && minutes == 0 && seconds == 0 || seconds < 0) {
             clearInterval(interval);
             finishCountdown();
         }
@@ -90,20 +103,33 @@ function startCountdown() {
 */
 function finishCountdown() {
     let redirectTime = 3;
-    var redirectInterval = setInterval(function() {
+    let redirectInterval = setInterval(function() {
         document.getElementById("timer").innerHTML = "No longer blocked! Refreshing in " + redirectTime + " seconds...";
         redirectTime--;
         if (redirectTime < 0) {
             chrome.storage.sync.remove(hostname);
-            clearInterval(redirectInterval)
+            clearInterval(redirectInterval);
             window.location.reload();
         }
     }, 1000);
 }
 
+/*
+    Listen for messages from background script.
+*/
+chrome.runtime.onMessage.addListener(
+    function(request, sender, sendResponse) {
+      if (request.msg == "Are you there content script?") {
+          sendResponse({msg: "Yes"});
+      }
+    }
+);
+
+
 /* ===================== Initialization ===================== */
 
 removeExistingComponents();
 createComponents();
-createDebuggingComponents();
+/* Uncomment this to view debugging info */
+// createDebuggingComponents();
 startCountdown();

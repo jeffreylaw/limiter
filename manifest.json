@@ -1,11 +1,12 @@
 {
     "manifest_version": 2,
     "name": "Limiter",
-    "version": "1.0",
+    "version": "3.0",
     "description": "Limit the number of times you can visit a page in a custom period of time.",
     "browser_action": {
         "default_title": "Limiter",
-        "default_popup": "popup.html"
+        "default_popup": "popup.html",
+        "default_icon": "./images/clock.png"
     },
     "background": {
         "scripts": ["background.js"],
@@ -16,5 +17,10 @@
         "images/*",
         "about.html",
         "howto.html"
-    ]
+    ],
+    "icons": { 
+        "16": "images/clock.png",
+        "48": "images/clock.png",
+       "128": "images/clock.png" 
+    }
 }

@@ -16,10 +16,17 @@ let endTime;
 function setHostname() {
    chrome.tabs.query({'active': true, currentWindow: true},
       function(tabs){
-         var url = new URL(tabs[0].url);
-         let key = url.hostname;
-         hostname.innerHTML = key;
-         document.getElementById("clearLimiter").value = "Release " + key;
+         let url = new URL(tabs[0].url);
+         hostname.innerHTML = url.hostname;
+         document.getElementById("clearLimiter").value = "Release " + url.hostname;
+         if (!url.hostname.includes(".")) {
+            hostname.innerHTML = "";
+            document.querySelectorAll("input").forEach(input => {
+               input.disabled = true;
+            })
+            addSite.style.backgroundColor = "grey";
+            clearBtn.style.backgroundColor = "grey";
+         }
    });
 }
 
@@ -30,16 +37,15 @@ function start() {
    document.getElementById("counters").style.display = "none";
    chrome.tabs.query({'active': true, currentWindow: true},
       function(tabs){
-         var url = new URL(tabs[0].url);
-         let hostname = url.hostname;
+         let url = new URL(tabs[0].url);
          chrome.storage.sync.get(null, function(items){
             for (key in items) {
-                if (hostname === key) {
+                if (key === url.hostname) {
                   counters.style.display = "block";
-                    console.log(items[hostname]);
-                    endTime = new Date(JSON.parse(items[hostname]["endTime"])).getTime();
+                    console.log(items[url.hostname]);
+                    endTime = new Date(JSON.parse(items[url.hostname]["endTime"])).getTime();
                     displayTimer();
-                    displayRemainingCounter(items[hostname]);
+                    displayRemainingCounter(items[url.hostname]);
                 }
             }
         })
@@ -51,17 +57,17 @@ function start() {
    Create and display countdown timer.
 */
 function displayTimer() {
-   var interval = setInterval(function() {
-      var now = new Date().getTime();
-      var distance = endTime - now;
+   let interval = setInterval(function() {
+      let now = new Date().getTime();
+      let distance = endTime - now;
    
-      var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+      let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      let seconds = Math.floor((distance % (1000 * 60)) / 1000);
       document.getElementById("timer").innerHTML = "Blocked for: " + hours + "h " + minutes + "m " + seconds + "s ";
-      if (hours == 0 && minutes == 0 && seconds == 0) {
+      if (hours == 0 && minutes == 0 && seconds == 0 || seconds < 0) {
           clearInterval(interval);
-          document.getElementById("timer").innerHTML = "Unblocked!"
+          document.getElementById("timer").innerHTML = "Unblocked!";
       }
    });
 }
@@ -79,7 +85,7 @@ function displayRemainingCounter(data) {
 */
 function setLinks() {
    document.getElementById("about-link").href = chrome.runtime.getURL('about.html');
-   document.getElementById("howto-link").href = chrome.runtime.getURL('howto.html')
+   document.getElementById("howto-link").href = chrome.runtime.getURL('howto.html');
 }
 
 /* ===================== Event Listeners ===================== */
@@ -92,8 +98,7 @@ addSite.onclick = function() {
    if (maxVisits.checkValidity() && hours.checkValidity() && minutes.checkValidity()) {
       chrome.tabs.query({'active': true, currentWindow: true},
      function(tabs){
-        var url = new URL(tabs[0].url);
-        let key = url.hostname;
+        let url = new URL(tabs[0].url);
         let currentTime = new Date();
         let expiryTime = new Date(currentTime);
         if (hours.value != null && hours.value != "" && hours.value > 0) {
@@ -116,12 +121,12 @@ addSite.onclick = function() {
            "currentCount": 0,
            "maxCount": parseInt(maxVisits.value)
         }
-        var jsonObj = {};
-        jsonObj[key] = data
+        let jsonObj = {};
+        jsonObj[url.hostname] = data
         chrome.storage.sync.set(jsonObj, function() {
-           console.log('Saved', key, data);
+           console.log('Saved', url.hostname, data);
         });
-        chrome.browserAction.setBadgeText({ text: maxVisits.value, tabId: tabs[0].id });
+        chrome.runtime.sendMessage({msg: "setInitialBadges", hostname: url.hostname, maxVisits: maxVisits.value})
         window.close();
      });
    }
@@ -134,12 +139,10 @@ addSite.onclick = function() {
 clearBtn.onclick = function() {
    chrome.tabs.query({'active': true, currentWindow: true},
    function(tabs){
-      var url = new URL(tabs[0].url);
-      let hostname = url.hostname;
-      chrome.storage.sync.remove(hostname);
-      chrome.browserAction.setBadgeText({ text: "", tabId: tabs.id });
+      let url = new URL(tabs[0].url);
+      chrome.storage.sync.remove(url.hostname);
+      chrome.runtime.sendMessage({msg: "clearOneDomain", hostname: url.hostname})
       window.close();
-      chrome.tabs.update(tabs[0].id, {url: tabs[0].url});
    });
 }
 
@@ -148,12 +151,18 @@ clearBtn.onclick = function() {
    Clears the Chrome storage and refreshes the page.
 */
 clearAllBtn.onclick = function() {
-   chrome.tabs.query({'active': true, currentWindow: true},
-   function(tabs){
-      chrome.storage.sync.clear();
-      window.close();
-      chrome.tabs.update(tabs[0].id, {url: tabs[0].url});
-   });
+   chrome.runtime.sendMessage({msg: "clearAll"})
+   // chrome.storage.sync.clear()
+   window.close()
+   // chrome.tabs.query({'active': true, currentWindow: true},
+   // function(tabs){
+   //    chrome.storage.sync.clear();
+   //    window.close();
+   //    chrome.tabs.update(tabs[0].id, {url: tabs[0].url});
+   //    chrome.runtime.sendMessage({greeting: "hello"}, function(response) {
+   //       console.log(response.farewell)
+   //   })
+   // });
 }
 
 
