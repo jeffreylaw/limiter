@@ -1,20 +1,50 @@
-h1, h2, h3, h4, h5, h6, p {
-    color: #333;
+* {
+    margin:0;
+    padding:0;
 }
 
-h1 {
+body {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    min-width: 150px;
+    background-color: #293745;
+}
+
+hr {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    border: 0.5px dashed #49627a;
+}
+
+h1 {   
+    font-family: 'Montserrat', sans-serif;  
+    color: #FDCA7F;
     margin-top: 0;
     margin-bottom: 0;
+    text-align: center;
+    letter-spacing: 2px;
 }
 
 h6 {
+    color: #B8B8B8;
     font-size: 16px;
     margin-top: 0;
     margin-bottom: 0;
+    text-align: center;
 }
 
-body, input {
-    background-color: #fbfbfb;
+p {
+    color: #F8FAFB;
+}
+
+label {
+    color: #F8FAFB;
+    font-size: 14px;
+}
+
+a {
+    color: #3BA7D2;
 }
 
 div {
@@ -22,34 +52,82 @@ div {
     margin-bottom: 0;
 }
 
-hr {
-    margin: 2px;
-    padding:0;
+#info-div {
+    margin-bottom: 10px;
+}
+
+#create-limit-div {
+    margin-top: 15px;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+#counters {
+    color: #d4d4d4;
+    font-size: 14px;
+    font-weight: 400;  
+    margin-top: 10px;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.counter {
+    font-size: 20px;
+    color: #F8FAFB;
 }
 
 .btn-1 {
-    padding: 5px;
+    font-family: 'Montserrat', sans-serif;  
+    font-weight: 400;  
+    padding: 6px 10px;
+    background-color: #fe6552;
+    color: #fff;
+    border: none;
+    transition-duration: 0.2s;
     margin-top: 2px;
     margin-bottom: 2px;
-    background-color: #008CBA;
-    color: #fbfbfb;
-    border: 2px solid #fbfbfb; 
   }
 
-.btn-1 {
-    transition-duration: 0.2s;
+.btn-1:hover, .btn-2:hover {
+    background-color: #0a7092;
 }
 
-.btn-1:hover {
-    background-color: #006080;
+.btn-2 {
+    font-family: 'Montserrat', sans-serif;  
+    font-weight: 400;  
+    padding: 6px 10px;
+    background-color: #3d5a80;
+    color: #fff;
+    border: none;
+    transition-duration: 0.2s;
+    margin-top: 2px;
+    margin-bottom: 2px;
 }
 
 input[type=number]{
-    width: 120px;
-    border-radius: 4px;
-    border: 2px solid lightgrey;
+    text-align: center;
+    margin-left: 2px;
+    background-color: #f3f3f3;
+    width: 80px;
+    border-radius: 2px;
+    border: 1px solid #293745;
+    margin-bottom: 5px;
 } 
 
 input[type=number]:focus {
-    border-radius: 4px;
+    text-align: center;
+}
+
+#release-buttons {
+    display: flex;
+    margin-right: 15px;
+    margin-left: 15px;
+    margin-bottom: 10px;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#footer {
+    display: flex;
+    justify-content: space-evenly;
 }

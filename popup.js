@@ -1,4 +1,4 @@
-let counters = document.getElementById("counters")
+let counters = document.getElementById("counters");
 let addSite = document.getElementById("addSite");
 let clearBtn = document.getElementById("clearLimiter");
 let clearAllBtn = document.getElementById("clearAll");
@@ -6,26 +6,29 @@ let maxVisits = document.getElementById("maxVisits");
 let hours = document.getElementById("hours");
 let minutes = document.getElementById("minutes");
 let hostname = document.getElementById("hostname");
+let infoDiv = document.getElementById("info-div");
+let formDiv = document.getElementById("create-limit-div");
 let endTime;
 
 /* ===================== Functions ===================== */
 
 /*
-   Set hostname values 
+   Set hostname values.
 */
 function setHostname() {
    chrome.tabs.query({'active': true, currentWindow: true},
       function(tabs){
          let url = new URL(tabs[0].url);
          hostname.innerHTML = url.hostname;
-         document.getElementById("clearLimiter").value = "Release " + url.hostname;
+         document.getElementById("clearLimiter").value = "Unlimit " + url.hostname;
          if (!url.hostname.includes(".")) {
             hostname.innerHTML = "";
-            document.querySelectorAll("input").forEach(input => {
-               input.disabled = true;
-            })
-            addSite.style.backgroundColor = "grey";
-            clearBtn.style.backgroundColor = "grey";
+            formDiv.style.display = "none";
+            let infoPara = document.createElement("p");
+            infoPara.appendChild(document.createTextNode("This page cannot be blocked."));
+            counters.appendChild(infoPara);
+         } else {
+            document.getElementById("counters").style.display = "none";
          }
    });
 }
@@ -34,19 +37,19 @@ function setHostname() {
    Check if the current Chrome tab website is limited and show timer components if it is.
 */
 function start() {
-   document.getElementById("counters").style.display = "none";
    chrome.tabs.query({'active': true, currentWindow: true},
       function(tabs){
          let url = new URL(tabs[0].url);
          chrome.storage.sync.get(null, function(items){
             for (key in items) {
-                if (key === url.hostname) {
+               if (key === url.hostname) {
                   counters.style.display = "block";
-                    console.log(items[url.hostname]);
-                    endTime = new Date(JSON.parse(items[url.hostname]["endTime"])).getTime();
-                    displayTimer();
-                    displayRemainingCounter(items[url.hostname]);
-                }
+                  console.log(items[url.hostname]);
+                  endTime = new Date(JSON.parse(items[url.hostname]["endTime"])).getTime();
+                  displayTimer(items[url.hostname]);
+                  displayRemainingCounter(items[url.hostname]);
+                  hideForm();
+               }
             }
         })
 
@@ -54,17 +57,31 @@ function start() {
 }
 
 /*
+   Hide form.
+*/
+function hideForm() {
+   formDiv.style.display = "none";
+}
+
+/*
    Create and display countdown timer.
 */
-function displayTimer() {
+function displayTimer(data) {
    let interval = setInterval(function() {
+      let remaining = data["maxCount"] - data["currentCount"];
+
       let now = new Date().getTime();
       let distance = endTime - now;
-   
       let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
       let seconds = Math.floor((distance % (1000 * 60)) / 1000);
-      document.getElementById("timer").innerHTML = "Blocked for: " + hours + "h " + minutes + "m " + seconds + "s ";
+      if (remaining < 0) {
+         document.getElementById("timer").innerHTML = "Blocked until";
+      } else {
+         document.getElementById("timer").innerHTML = "Limit set until";
+      }
+
+      document.getElementById("timer").innerHTML += "<br><span class='counter'>" + hours + "h " + minutes + "m " + seconds + "s</span>";
       if (hours == 0 && minutes == 0 && seconds == 0 || seconds < 0) {
           clearInterval(interval);
           document.getElementById("timer").innerHTML = "Unblocked!";
@@ -76,8 +93,14 @@ function displayTimer() {
    Create and display the visits remaining.
 */
 function displayRemainingCounter(data) {
-   let remaining = Math.max(0, data["maxCount"] - data["currentCount"]);
-   document.getElementById("remainingCounter").innerHTML = "Visits left: " + remaining;
+   let remaining = data["maxCount"] - data["currentCount"];
+   if (remaining < 0) {
+      document.getElementById("remainingCounter").innerHTML = "You ran out of visits.";
+   } else if (remaining === 0 ) {
+      document.getElementById("remainingCounter").innerHTML = "Your next visit will be blocked.";
+   } else {
+      document.getElementById("remainingCounter").innerHTML = "<span>"+ remaining + " visits remaining</span>";
+   }
 }
 
 /*
@@ -133,7 +156,7 @@ addSite.onclick = function() {
 }
 
 /*
-   <Release website> button
+   <Unlimit website> button
    Removes the website entry from the Chrome storage and refreshes the page.
 */
 clearBtn.onclick = function() {
@@ -147,22 +170,12 @@ clearBtn.onclick = function() {
 }
 
 /*
-   <Release all sites> button
+   <Unlimit all sites> button
    Clears the Chrome storage and refreshes the page.
 */
 clearAllBtn.onclick = function() {
    chrome.runtime.sendMessage({msg: "clearAll"})
-   // chrome.storage.sync.clear()
    window.close()
-   // chrome.tabs.query({'active': true, currentWindow: true},
-   // function(tabs){
-   //    chrome.storage.sync.clear();
-   //    window.close();
-   //    chrome.tabs.update(tabs[0].id, {url: tabs[0].url});
-   //    chrome.runtime.sendMessage({greeting: "hello"}, function(response) {
-   //       console.log(response.farewell)
-   //   })
-   // });
 }
 
 

@@ -116,7 +116,10 @@ function incrementCount(hostname, data) {
 }
 
 function isAValidEntry(obj) {
-
+    if (obj.hasOwnProperty("currentCount") && obj.hasOwnProperty("maxCount") && obj.hasOwnProperty("endTime") && obj.hasOwnProperty("startTime")) {
+        return true;
+    }
+    return false;
 }
 
 /* ===================== Event Listeners ===================== */
@@ -171,15 +174,27 @@ chrome.runtime.onMessage.addListener(
         }
 
         if (request.msg === 'clearAll') {
+            let listOfDomains = [];
             chrome.storage.sync.get(null, function(items){
                 for (key in items) {
                     if (isAValidEntry(items[key])) {
                         chrome.storage.sync.remove(key);
+                        listOfDomains.push(key)
                     }
                 }
                 chrome.tabs.query({}, function(tabs) {
                     tabs.forEach(function(tab) {
-                        chrome.browserAction.setBadgeText({ text: "", tabId: tab.id })
+                        let tabUrl = new URL(tab.url)
+                        if (listOfDomains.includes(tabUrl.hostname)) {
+                            chrome.browserAction.setBadgeText({ text: "", tabId: tab.id })
+                            chrome.tabs.sendMessage(tab.id, {msg: "Are you there content script?"}, function (response) {
+                                if (chrome.runtime.lastError) { return; }
+                                response = response || {};
+                                if (response.msg === 'Yes') {
+                                    chrome.tabs.reload(tab.id)
+                                }
+                            })
+                        }
                     })
                 })
             })

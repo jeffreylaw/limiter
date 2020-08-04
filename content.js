@@ -1,3 +1,6 @@
+let html = document.getElementsByTagName("html")[0];
+let head = document.getElementsByTagName("head")[0]
+let body = document.getElementsByTagName("body")[0];
 let coverDiv = document.createElement("div");
 
 /*
@@ -21,6 +24,28 @@ function removeExistingComponents() {
 }
 
 /*
+    Dynamically set styles
+*/
+function setStyles() { 
+    html.style.backgroundColor = "#F3EAE6";
+    document.querySelectorAll('h1').forEach(el => {
+        el.style.color = "#2b2b2b"
+        el.style.fontFamily = "Roboto, sans-serif";
+    });
+    document.querySelectorAll('p').forEach(el => {
+        el.style.color = "#2b2b2b"
+        el.style.fontFamily = "Roboto, sans-serif";
+    });
+
+    let link = document.createElement("link");
+    link.setAttribute("rel", "stylesheet");
+    link.type = "text/css";
+    link.href = "https://fonts.googleapis.com/css2?family=Roboto&display=swap";
+    head.appendChild(link);
+}
+
+
+/*
     Create new div with status information.
 */
 function createComponents() {
@@ -41,7 +66,7 @@ function createComponents() {
     let info = document.createElement("p");
     info.style.textAlign = "center";
     info.style.fontSize = "25px";
-    let infoText = document.createTextNode("You have exceeded the maximum number of visits to this domain, you will be locked out until the timer is up.");
+    let infoText = document.createTextNode("You have exceeded the number of visits to this domain.");
     
     info.appendChild(infoText);
     coverDiv.appendChild(info)
@@ -90,7 +115,7 @@ function startCountdown() {
         let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         let seconds = Math.floor((distance % (1000 * 60)) / 1000);
-        document.getElementById("timer").innerHTML = "Remaining time: " + hours + "h " + minutes + "m " + seconds + "s ";
+        document.getElementById("timer").innerHTML = "Blocked until: " + hours + "h " + minutes + "m " + seconds + "s ";
         if (hours == 0 && minutes == 0 && seconds == 0 || seconds < 0) {
             clearInterval(interval);
             finishCountdown();
@@ -130,6 +155,7 @@ chrome.runtime.onMessage.addListener(
 
 removeExistingComponents();
 createComponents();
+setStyles();
 /* Uncomment this to view debugging info */
 // createDebuggingComponents();
 startCountdown();
