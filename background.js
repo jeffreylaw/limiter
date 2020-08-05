@@ -1,63 +1,84 @@
 /* ===================== Functions ===================== */
 
-function listen(hostname, id) {
-    chrome.storage.sync.get(null, function(items){
+/* 
+    Helper function to compare the latest time to the time last set.
+*/
+function notRunRecently(latestTime) {
+    let diff = latestTime - chrome._LAST_RUN
+    return diff < 500 ? false : true
+}
+
+/*
+    Helper function, checks if the latest tab id is the different than the tab id last set.
+*/
+function isDifferentTab(otherTabId) {
+    return chrome._LAST_TAB_ID !== otherTabId;
+}
+
+/*
+    Clear leftover badges.
+*/
+function clearOldBadges(hostname) {
+    chrome.storage.sync.get(null, function(items) {
         if (!items.hasOwnProperty(hostname)) {
             chrome.tabs.query({}, function(tabs) {
                 tabs.forEach(function(tab) {
-                    let tabUrl = new URL(tab.url)
+                    let tabUrl = new URL(tab.url);
                     if (tabUrl.hostname === hostname) {
-                        chrome.browserAction.setBadgeText({ text: "", tabId: tab.id })
+                        chrome.browserAction.setBadgeText({ text: "", tabId: tab.id })  
                     }
                 })
             })
         }
-        for (key in items) {
-            if (key === hostname) {
-                let data = items[hostname];
-                let retrievedEndTime = Date.parse(JSON.parse(data.endTime))
-                let parsedData = JSON.stringify(items[hostname]);
+    })
+}
 
-                if (retrievedEndTime > new Date()) {
-                    updateBadgeText(data, hostname);
-                    incrementCount(hostname, data);
-                    tryInjectingOverlay(data, parsedData, hostname, id);
-                } else {
-                    chrome.storage.sync.remove(hostname);
-                    chrome.tabs.query({}, function(tabs) {
-                        tabs.forEach(function(tab) {
-                            let tabUrl = new URL(tab.url)
-                            if (tabUrl.hostname === hostname) {
-                                chrome.browserAction.setBadgeText({ text: "", tabId: tab.id })
-                            }
-                        })
-                    })
+/*
+    Main processing function.
+*/
+function process(details) {
+    let url = new URL(details.url);
+    let hostname = url.hostname;
+    let id = details.tabId;
+    clearOldBadges(hostname);
+
+    chrome.storage.sync.get(hostname, function(storage) {
+        if (storage[hostname] && isAValidEntry(storage[hostname])) {
+            let data = storage[hostname];
+            let endTime = Date.parse(JSON.parse(data.endTime))
+            let jsonData = JSON.stringify(data);
+
+            if (endTime > new Date()) {
+                incrementCount(data, hostname);
+                updateBadgeText(data, hostname);
+                if (exceededMaxCount(data)) {
+                    injectOverlay(jsonData, hostname, id);         
                 }
+            } else {
+                chrome.storage.sync.remove(hostname);
+                chrome.tabs.query({}, function(tabs) {
+                    tabs.forEach(function(tab) {
+                        let tabUrl = new URL(tab.url);
+                        if (tabUrl.hostname === hostname) {
+                            chrome.browserAction.setBadgeText({ text: "", tabId: tab.id });
+                        }
+                    })
+                })
             }
         }
     })
 }
 
 /*
-    Try injecting JS overlay.
+    Inject JS overlay.
 */
-function tryInjectingOverlay(data, parsedData, hostname, id) {
-    if (exceededMaxCount(data)) {
-        chrome.tabs.query({}, function(tabs) {
-            tabs.forEach(function(tab) {
-                if (tab.id === id) {
-                    chrome.tabs.insertCSS(tab.id, {file: "css/content.css"});
-                    chrome.tabs.executeScript(tab.id, {
-                        code: "var dataObj = " + parsedData + "; var hostname = " + JSON.stringify(hostname)
-                      }, function() {
-                          chrome.tabs.executeScript(tab.id, {file: "content.js"})
-                          chrome.browserAction.setBadgeBackgroundColor({ color: "#b30000", tabId: tab.id });
-                          chrome.browserAction.setBadgeText({ text: "X", tabId: tab.id });
-                      });       
-                }
-            })
-        })   
-    }
+function injectOverlay(parsedData, hostname, id) {
+    chrome.tabs.insertCSS(id, {file: "css/content.css"});
+    chrome.tabs.executeScript(id, {
+        code: "var dataObj = " + parsedData + "; var hostname = " + JSON.stringify(hostname)
+        }, function() {
+            chrome.tabs.executeScript(id, {file: "content.js"})
+        });     
 }
 
 /*
@@ -88,16 +109,13 @@ function updateBadgeText(data, hostname) {
     Check if the most recent attempt to access a website will exceed the maximum limit.
 */
 function exceededMaxCount(data) {
-    if (data["currentCount"] + 1 > data["maxCount"]) {
-        return true;
-    } 
-    return false;
+    return (data["currentCount"] + 1) > data["maxCount"];
 }
 
 /*
     Increment the current visit count.
 */
-function incrementCount(hostname, data) {
+function incrementCount(data, hostname) {
     let startTime = data["startTime"];
     let endTime = data["endTime"];
     let maxCount = data["maxCount"];
@@ -115,30 +133,80 @@ function incrementCount(hostname, data) {
      });
 }
 
+/*
+    Check if the object in the chrome storage is created by this extension.
+*/
 function isAValidEntry(obj) {
-    if (obj.hasOwnProperty("currentCount") && obj.hasOwnProperty("maxCount") && obj.hasOwnProperty("endTime") && obj.hasOwnProperty("startTime")) {
-        return true;
-    }
-    return false;
+    return obj.hasOwnProperty("currentCount") && obj.hasOwnProperty("maxCount") && obj.hasOwnProperty("endTime") && obj.hasOwnProperty("startTime");
+}
+
+/*
+    Update variables holding the timestamp of the event listener last ran and its origin tab id.
+*/
+function updateTrackingVariables(details) {
+    chrome._LAST_RUN = details.timeStamp;
+    chrome._LAST_TAB_ID = details.tabId;
 }
 
 /* ===================== Event Listeners ===================== */
 
-/*
-    Listen for website DOM being loaded.
-*/
-chrome.webNavigation.onDOMContentLoaded.addListener(function(e) {
-    if (e.frameId == 0) {
-        let url = new URL(e.url)
-        listen(url.hostname, e.tabId)
-    }
-});
 
 /*
-    Check for messages sent from extension.
+    Listen for DOM content being loaded.
+*/
+function callbackForDOMContentLoaded(details) {
+    if (details.frameId === 0) {        
+            console.log('Dom listener')
+            updateTrackingVariables(details);
+            process(details);
+    }
+}
+
+/*
+    Listen to history state changes.
+*/
+function callbackForHistoryStateUpdate(details) {
+    if(details.frameId === 0) {
+        if (typeof chrome._LAST_RUN === 'undefined' || notRunRecently(details.timeStamp)) {
+            console.log('History listener')
+            updateTrackingVariables(details);
+            process(details);
+        }
+
+        if (!notRunRecently(details.timeStamp)) {
+            if (isDifferentTab(details.tabId)) {
+                console.log('Concurrent history listener')
+                updateTrackingVariables(details);
+                process(details);
+            }
+        }
+    }
+}
+
+chrome.webNavigation.onDOMContentLoaded.addListener(callbackForDOMContentLoaded);
+chrome.webNavigation.onHistoryStateUpdated.addListener(callbackForHistoryStateUpdate);
+
+/*
+    Listen for messages sent from extension.
 */
 chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
+        if (request.msg === 'setInitialBadges') {
+            chrome.tabs.query({}, function(tabs) {
+                tabs.forEach(function(tab) {
+                    let tabUrl = new URL(tab.url)
+                    if (tabUrl.hostname === request.hostname) {
+                        if (parseInt(request.maxVisits) === 0) {
+                            chrome.browserAction.setBadgeBackgroundColor({ color: "#FFB319", tabId: tab.id });
+                        } else {
+                            chrome.browserAction.setBadgeBackgroundColor({ color: "#008000", tabId: tab.id });
+                        }
+                        chrome.browserAction.setBadgeText({ text: request.maxVisits, tabId: tab.id })
+                    }
+                })
+            })
+        }
+
         if (request.msg === 'clearOneDomain') {
             chrome.tabs.query({}, function(tabs) {
                 tabs.forEach(function(tab) {
@@ -152,22 +220,6 @@ chrome.runtime.onMessage.addListener(
                                 chrome.tabs.reload(tab.id)
                             }
                         })
-                    }
-                })
-            })
-        }
-
-        if (request.msg === 'setInitialBadges') {
-            chrome.tabs.query({}, function(tabs) {
-                tabs.forEach(function(tab) {
-                    let tabUrl = new URL(tab.url)
-                    if (tabUrl.hostname === request.hostname) {
-                        if (parseInt(request.maxVisits) === 0) {
-                            chrome.browserAction.setBadgeBackgroundColor({ color: "#FFB319", tabId: tab.id });
-                        } else {
-                            chrome.browserAction.setBadgeBackgroundColor({ color: "#008000", tabId: tab.id });
-                        }
-                        chrome.browserAction.setBadgeText({ text: request.maxVisits, tabId: tab.id })
                     }
                 })
             })

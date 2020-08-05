@@ -6,6 +6,8 @@
 body {
     padding-top: 10px;
     padding-bottom: 10px;
+    padding-left: 8px;
+    padding-right: 8px;
     min-width: 150px;
     background-color: #293745;
 }
@@ -88,8 +90,12 @@ div {
     margin-bottom: 2px;
   }
 
-.btn-1:hover, .btn-2:hover {
+.btn-1:hover {
     background-color: #0a7092;
+}
+
+.btn-2:hover {
+    background-color: #2f4561;
 }
 
 .btn-2 {

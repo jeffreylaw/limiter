@@ -8,6 +8,7 @@ let minutes = document.getElementById("minutes");
 let hostname = document.getElementById("hostname");
 let infoDiv = document.getElementById("info-div");
 let formDiv = document.getElementById("create-limit-div");
+let releaseBtnsDiv = document.getElementById("release-buttons");
 let endTime;
 
 /* ===================== Functions ===================== */
@@ -27,6 +28,7 @@ function setHostname() {
             let infoPara = document.createElement("p");
             infoPara.appendChild(document.createTextNode("This page cannot be blocked."));
             counters.appendChild(infoPara);
+            releaseBtnsDiv.style.display = "none";
          } else {
             document.getElementById("counters").style.display = "none";
          }

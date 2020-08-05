@@ -78,32 +78,6 @@ function createComponents() {
     coverDiv.appendChild(timer);
 }
 
-/* 
-    Component for debugging ONLY
-    Shows the start and end times, website root domain, visit count, and max visits.
-*/
-function createDebuggingComponents() {
-    let debugParagraph = document.createElement("p");
-    let debugHeader = document.createElement("h1");
-    let debugDescription = document.createTextNode("Debugging Information");
-    let websiteName = document.createTextNode("Website: " + hostname);
-    let visitCount = document.createTextNode("Visits: " + (dataObj["currentCount"] + 1));
-    let maxCount = document.createTextNode("Max visits: " + dataObj["maxCount"]);
-    debugHeader.appendChild(debugDescription);
-    debugParagraph.appendChild(debugHeader);
-    debugParagraph.appendChild(websiteName);
-    debugParagraph.appendChild(document.createElement("br"));
-    debugParagraph.appendChild(visitCount);
-    debugParagraph.appendChild(document.createElement("br"));
-    debugParagraph.appendChild(maxCount);
-    debugParagraph.appendChild(document.createElement("br"));
-    debugParagraph.appendChild(document.createTextNode("Start time: " + (new Date(startTime).toString())));
-    debugParagraph.appendChild(document.createElement("br"));
-    debugParagraph.appendChild(document.createTextNode("End time: " + (new Date(endTime).toString())));
-    debugParagraph.appendChild(document.createElement("br"));
-    coverDiv.appendChild(debugParagraph);
-}
-
 /*
     Create and display a countdown timer.
 */
@@ -151,11 +125,38 @@ chrome.runtime.onMessage.addListener(
 );
 
 
+/* 
+    Component for debugging ONLY
+    Shows the start and end times, website root domain, visit count, and max visits.
+*/
+function createDebuggingComponents() {
+    let debugParagraph = document.createElement("p");
+    let debugHeader = document.createElement("h1");
+    let debugDescription = document.createTextNode("Debugging Information");
+    let websiteName = document.createTextNode("Website: " + hostname);
+    let visitCount = document.createTextNode("Visits: " + (dataObj["currentCount"] + 1));
+    let maxCount = document.createTextNode("Max visits: " + dataObj["maxCount"]);
+    debugHeader.appendChild(debugDescription);
+    debugParagraph.appendChild(debugHeader);
+    debugParagraph.appendChild(websiteName);
+    debugParagraph.appendChild(document.createElement("br"));
+    debugParagraph.appendChild(visitCount);
+    debugParagraph.appendChild(document.createElement("br"));
+    debugParagraph.appendChild(maxCount);
+    debugParagraph.appendChild(document.createElement("br"));
+    debugParagraph.appendChild(document.createTextNode("Start time: " + (new Date(startTime).toString())));
+    debugParagraph.appendChild(document.createElement("br"));
+    debugParagraph.appendChild(document.createTextNode("End time: " + (new Date(endTime).toString())));
+    debugParagraph.appendChild(document.createElement("br"));
+    coverDiv.appendChild(debugParagraph);
+}
+
+
 /* ===================== Initialization ===================== */
 
 removeExistingComponents();
 createComponents();
 setStyles();
-/* Uncomment this to view debugging info */
+/* Uncomment the function call below to view debugging info */
 // createDebuggingComponents();
 startCountdown();
