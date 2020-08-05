@@ -24,7 +24,7 @@ None at this time.
 Icon badges won't clear by countdown if user never tries to visit domain after running out of visits. 
 
 ## Versions
-3.2 - Now handles SPA changes, fixed a bug where pages triggered DOMContent and HistoryStateChange.
+3.2 - Now handles SPA changes, fixed a bug where pages triggered DOMContent and HistoryStateChange.\
 3.1 - Popup style overhaul, minor style changes on injecting page, fixed clear all button.\
 3.0 - Icons, colored badges, tabs that have a Limiter will show correct remaining number of visits left, blocked pages will reload once timer is done, disabled form on non-url pages, removed clear all button for now, general bug fixes.\
 2.0 - Support for badges text, about & help pages, the ability to release websites\
