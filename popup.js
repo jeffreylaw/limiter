@@ -23,8 +23,9 @@ function setHostname() {
          hostname.innerHTML = url.hostname;
          document.getElementById("clearLimiter").value = "Unlimit " + url.hostname;
          if (!url.hostname.includes(".")) {
-            hostname.innerHTML = "";
             formDiv.style.display = "none";
+            hostname.innerHTML = "";
+            counters.innerHTML = "";
             let infoPara = document.createElement("p");
             infoPara.appendChild(document.createTextNode("This page cannot be blocked."));
             counters.appendChild(infoPara);

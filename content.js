@@ -90,7 +90,7 @@ function startCountdown() {
         let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         let seconds = Math.floor((distance % (1000 * 60)) / 1000);
         document.getElementById("timer").innerHTML = "Blocked until: " + hours + "h " + minutes + "m " + seconds + "s ";
-        if (hours == 0 && minutes == 0 && seconds == 0 || seconds < 0) {
+        if (hours === 0 && minutes === 0 && seconds === 0 || seconds < 0) {
             clearInterval(interval);
             finishCountdown();
         }
