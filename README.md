@@ -1,7 +1,20 @@
 # limiter
 A Chrome extension that allows you to limit the amount of visits to a particular website for a period of time.
 
+![Gif of functionality](/readme_images/functionality.gif?raw=true)
+
 ## Getting Started
+
+### Instructions
+1. Click the Limiter icon on the domain you want to "limit".
+2. Enter the hours and minutes you want the limit (for that domain) to last.
+3. Enter the # of visits you want to allow until the domain is blocked.
+4. Click 'Start Limit'
+
+### Tips
+* A green badge indicates you can visit the domain (of the current tab) one or more times before it will be blocked.
+* A yellow badge indicates the next time you visit the domain (of the current tab), it will be blocked.
+* A red badge indicates the domain (of the current tab) is blocked.
 
 ### Installing
 1. `git clone https://github.com/jeffreylaw/limiter.git`
