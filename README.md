@@ -18,12 +18,14 @@ The extension will now be available in your browser.
 * Chrome API
 
 ## Upcoming Features
-None at this time.
+Have the option to cancel requests from loading for devices with data usage limitations.
 
 ## Known Bugs
-Icon badges won't clear by countdown if user never tries to visit domain after running out of visits. 
+Icon badges won't clear by countdown if user never tries to visit domain after running out of visits.
+Rapidly opening webpages of a website may result in extra visits being counted.
 
 ## Versions
+3.3 - Fixed a bug where pages would sometimes count for multiple visits particularly for SPA websites.\
 3.2 - Now handles SPA changes, fixed a bug where pages triggered DOMContent and HistoryStateChange.\
 3.1 - Popup style overhaul, minor style changes on injecting page, fixed clear all button.\
 3.0 - Icons, colored badges, tabs that have a Limiter will show correct remaining number of visits left, blocked pages will reload once timer is done, disabled form on non-url pages, removed clear all button for now, general bug fixes.\
