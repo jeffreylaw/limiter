@@ -12,7 +12,7 @@
         "scripts": ["background.js"],
         "persistent": false
     },
-    "permissions": ["*://*/*", "tabs", "storage", "activeTab", "webNavigation"],
+    "permissions": ["*://*/*", "tabs", "storage", "activeTab", "webNavigation", "history"],
     "web_accessible_resources": [
         "images/*",
         "about.html",

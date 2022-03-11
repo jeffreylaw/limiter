@@ -1,13 +1,5 @@
 /* ===================== Functions ===================== */
 
-/* 
-    Helper function to compare the latest time to the time last set.
-*/
-function notRunRecently(latestTime) {
-    let diff = latestTime - chrome._LAST_RUN
-    return diff < 500 ? false : true
-}
-
 /*
     Helper function, checks if the latest tab id is the different than the tab id last set.
 */
@@ -69,6 +61,7 @@ function process(details) {
     })
 }
 
+
 /*
     Inject JS overlay.
 */
@@ -129,7 +122,7 @@ function incrementCount(data, hostname) {
     let jsonObj = {};
     jsonObj[hostname] = updatedData;
     chrome.storage.sync.set(jsonObj, function() {
-        console.log('Updated', hostname, updatedData);
+        // console.log('Updated', hostname, updatedData);
      });
 }
 
@@ -146,45 +139,48 @@ function isAValidEntry(obj) {
 function updateTrackingVariables(details) {
     chrome._LAST_RUN = details.timeStamp;
     chrome._LAST_TAB_ID = details.tabId;
+    chrome._URL = details.url;
 }
 
 /* ===================== Event Listeners ===================== */
 
-
-/*
-    Listen for DOM content being loaded.
-*/
-function callbackForDOMContentLoaded(details) {
-    if (details.frameId === 0) {        
-            console.log('Dom listener')
-            updateTrackingVariables(details);
-            process(details);
-    }
+function callbackRanRecently(timeToCompare) {
+    let diff = timeToCompare - chrome._LAST_RUN
+    console.log(timeToCompare, chrome._LAST_RUN, diff);
+    return diff < 5000 ? true : false;
 }
 
-/*
-    Listen to history state changes.
-*/
-function callbackForHistoryStateUpdate(details) {
-    if(details.frameId === 0) {
-        if (typeof chrome._LAST_RUN === 'undefined' || notRunRecently(details.timeStamp)) {
-            console.log('History listener')
-            updateTrackingVariables(details);
-            process(details);
-        }
-
-        if (!notRunRecently(details.timeStamp)) {
-            if (isDifferentTab(details.tabId)) {
-                console.log('Concurrent history listener')
-                updateTrackingVariables(details);
-                process(details);
-            }
-        }
+function firstCallback(details) {
+    if (details.url.startsWith("chrome") || details.url === "about:blank" || !details.url.startsWith("http") || !details.url.startsWith("https") || details.url.includes("ogs.google.com")) {
+        return;
     }
+    if (details.parentFrameId !== -1) {
+        return;
+    }
+    console.log('First callback', details);
+    updateTrackingVariables(details);
+    process(details);
 }
 
-chrome.webNavigation.onDOMContentLoaded.addListener(callbackForDOMContentLoaded);
-chrome.webNavigation.onHistoryStateUpdated.addListener(callbackForHistoryStateUpdate);
+function secondCallback(details) {
+    if (details.url.startsWith("chrome") || details.url === "about:blank" || !details.url.startsWith("http") || !details.url.startsWith("https") || details.url.includes("ogs.google.com")) {
+        return;
+    }
+    console.log('Second callback', details);
+    if (details.tabId === chrome._LAST_TAB_ID && details.url === chrome._URL && callbackRanRecently(details.timeStamp)) {
+        console.log("Ignoring history state update");
+        updateTrackingVariables(
+            {timestamp: 0, tabId: null, url: ""}
+        )
+        return false;
+    }
+    process(details);
+}
+
+// chrome._TABS = {};
+chrome.webNavigation.onCommitted.addListener(firstCallback)
+// Needed to capture websites that use history.pushState or replaceState
+chrome.webNavigation.onHistoryStateUpdated.addListener(secondCallback);
 
 /*
     Listen for messages sent from extension.
